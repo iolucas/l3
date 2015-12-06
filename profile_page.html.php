@@ -127,7 +127,18 @@
                     searchContainer.selectAll(".search-result").data(resultsArray).enter()
                         .append("div")
                         .classed("search-result", true)
-                        .text(function(d) { return d.name; });
+                        .style("cursor", "pointer")
+                        .text(function(d) { return d.name; })
+                        .on("click", function(d) {
+                            //console.log(d);
+                            $.get("./", { node_path: "", node_id: d.id }, function(result) {
+                                console.log(JSON.parse(result));
+
+                                MUST CREATE PHANTOM NODES WITH THE RECEIVED DATA
+
+                            });                              
+                        })
+                        ;
   
                     console.log(resultsArray);         
                 });     

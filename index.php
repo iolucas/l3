@@ -6,13 +6,125 @@
 include 'includes/magicquotes.inc.php'; //Disable magic quotes
 include 'includes/helpers.inc.php';
 
+
+function recurseGetNodes($id, &$generalResult, $pdo) {
+
+	//Write query
+	$sql = 'SELECT source FROM node_links WHERE target = "' . $id . '"';
+	$result = $pdo->query($sql);	//Execute query
+
+	foreach ($result as $row) {
+		//Unset all numeric or undesired indexes
+		foreach ($row as $key => $value) {
+			if (is_int($key))
+        		unset($row[$key]);
+		}
+
+		$generalResult[] = $row;
+
+		recurseGetNodes($row['source'], $generalResult, $pdo);
+	}
+}
+
+
+//Node path request
+if (isset($_GET['node_path'])) {
+
+	if (isset($_GET['node_id'])) {
+		include 'includes/db.inc.php'; //Connect to the database
+
+		$nodesInvolved = array(array('source'=>$_GET['node_id']));
+
+		//Populate the nodes involved array
+		recurseGetNodes($_GET['node_id'], $nodesInvolved, $pdo);
+
+		//Get the nodes references
+		$nodes = array();
+
+		//Write the query
+		$sql = 'SELECT id,name FROM nodes WHERE';
+
+		foreach($nodesInvolved as $node) {
+			$sql .= ' id = "' . $node['source'] . '" OR';
+		}
+
+		$sql .= ' 0;';
+
+		//echo $sql;
+		//exit();
+
+		$result = $pdo->query($sql);	//Execute query
+
+
+		foreach ($result as $row) {
+			//Unset all numeric or undesired indexes
+			foreach ($row as $key => $value) {
+				if (is_int($key))
+	        		unset($row[$key]);
+			}
+
+			$nodes[] = $row;
+		}
+
+
+		//Get links
+		//Write the query
+		$sql = 'SELECT target,source FROM node_links WHERE';
+
+		foreach($nodes as $node) {
+			$sql .= ' target = "' . $node['id'] . '" OR';
+		}
+
+		$sql .= ' 0;';
+
+		$result = $pdo->query($sql);	//Execute query
+
+		$links = array();
+
+		foreach ($result as $row) {
+			//Unset all numeric or undesired indexes
+			foreach ($row as $key => $value) {
+				if (is_int($key))
+	        		unset($row[$key]);
+			}
+
+			$links[] = $row;
+		}
+
+		$finalObj = array('nodes'=> $nodes, 'links'=>$links);
+
+		echo json_encode($finalObj);
+		exit();
+
+
+		//Write query
+		/*$sql = 'SELECT id,name FROM nodes WHERE id = "' . $_GET['node_id'] . '"';
+		$result = $pdo->query($sql);	//Execute query
+
+		$resultArr = array();
+
+		foreach ($result as $row) {
+			//Unset all numeric or undesired indexes
+			foreach ($row as $key => $value) {
+				if (is_int($key))
+	        		unset($row[$key]);
+			}
+
+			$resultArr[] = $row;
+		}
+
+		print_r($resultArr);
+		exit();*/
+	} 
+}
+
 //Search request
 if (isset($_GET['search_query']) && $_GET['search_query']) {
 
 	include 'includes/db.inc.php'; //Connect to the database		
 
 	//Write query
-	$sql = 'SELECT * FROM nodes WHERE name = "' . $_GET['search_query'] . '"';
+	$sql = 'SELECT id,name FROM nodes WHERE name = "' . $_GET['search_query'] . '"';
 	$result = $pdo->query($sql);	//Execute query
 
 	$resultArray = array();
@@ -21,8 +133,7 @@ if (isset($_GET['search_query']) && $_GET['search_query']) {
 		
 		//Unset all numeric or undesired indexes
 		foreach ($row as $key => $value) {
-			if (is_int($key) || $key == "x" || $key == "y" || $key == "bgcolor" 
-				|| $key == "fgcolor" || $key == "description" || $key == "owner_id")
+			if (is_int($key))
         		unset($row[$key]);
 		}
 
