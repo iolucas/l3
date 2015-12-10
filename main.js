@@ -104,7 +104,7 @@
 			d.y = d3.event.y;
 
 			//Update dragged node parent and child links paths
-			for(var i = 0; i < d.parentLinks.length; i++) {
+			for(var i = 0; i < d.parentLinks.length ; i++) {
 				var currLink = d.parentLinks[i];
 				currLink.linkObj.attr("d", createLinkPath(currLink));
 			}
@@ -424,6 +424,7 @@
 		//Recursivelly highlight clicked node and its parents
 		highlightNodes(d);
 	}
+
 
 //-----------------------------------------------------------------------
 //						End Functions Definition

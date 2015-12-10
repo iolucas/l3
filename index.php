@@ -91,7 +91,7 @@ if (isset($_GET['node_path'])) {
 			$links[] = $row;
 		}
 
-		$finalObj = array('nodes'=> $nodes, 'links'=>$links);
+		$finalObj = array('nodes'=> $nodes, 'links'=>$links, 'final_id'=>$_GET['node_id']);
 
 		echo json_encode($finalObj);
 		exit();
